@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Company profile Wacebo</title>
+<style>
+  :root { --inchiostro: #141A26; --grigio: #4A5468; --fondo: #F8F9FC; --bordo: #DDE2EC; --gradiente: linear-gradient(90deg, #2FB4F5, #8A5CF6); }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 16px; background: var(--fondo); color: var(--inchiostro); font: 16px/1.4 "Inter Tight", -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { width: 100%; max-width: 380px; background: #fff; border: 1px solid var(--bordo); border-radius: 24px; padding: 36px 32px 28px; box-shadow: 0 20px 50px rgba(20, 26, 38, .08); }
+  img { height: 34px; display: block; margin-bottom: 28px; }
+  h1 { font-size: 24px; font-weight: 600; margin: 0 0 20px; letter-spacing: -.01em; }
+  label { display: block; font-size: 13px; font-weight: 600; color: var(--grigio); margin-bottom: 6px; }
+  input { width: 100%; font: inherit; padding: 12px 14px; border: 1.5px solid var(--bordo); border-radius: 12px; outline: none; }
+  input:focus { border-color: #8A5CF6; }
+  button { width: 100%; margin-top: 14px; font: inherit; font-weight: 600; color: #fff; padding: 12px; border: 0; border-radius: 999px; background: var(--gradiente); cursor: pointer; }
+  button:disabled { opacity: .6; cursor: wait; }
+  p { font-size: 13px; color: var(--grigio); margin: 14px 0 0; }
+  #errore { color: #C62828; min-height: 1.4em; margin-top: 10px; }
+</style>
+</head>
+<body>
+<main>
+  <img src="/wacebo-company-profile/accesso/wacebo-logo.svg" alt="wacebo">
+  <h1 id="t0"></h1>
+  <form id="modulo">
+    <label for="pw" id="t1"></label>
+    <input id="pw" type="password" autocomplete="current-password" required autofocus>
+    <button id="t2" type="submit"></button>
+    <p id="errore" role="alert"></p>
+  </form>
+  <p id="t4"></p>
+</main>
+<script src="/wacebo-company-profile/accesso/chiave.js"></script>
+<script>
+(async function () {
+  const TESTI = {"it":["Presentazione riservata","Password","Apri","Password non corretta.","Su questo dispositivo resta valida per 30 giorni.","Questo browser non apre la presentazione in una finestra privata. Usare una finestra normale."],"en":["Restricted presentation","Password","Open","Incorrect password.","It stays valid on this device for 30 days.","This browser can’t open the presentation in a private window. Please use a normal window."],"de":["Vertrauliche Präsentation","Passwort","Öffnen","Falsches Passwort.","Auf diesem Gerät bleibt es 30 Tage gültig.","Dieser Browser kann die Präsentation nicht in einem privaten Fenster öffnen. Bitte ein normales Fenster verwenden."],"fr":["Présentation réservée","Mot de passe","Ouvrir","Mot de passe incorrect.","Il reste valable 30 jours sur cet appareil.","Ce navigateur ne peut pas ouvrir la présentation en navigation privée. Utilisez une fenêtre normale."],"nl":["Vertrouwelijke presentatie","Wachtwoord","Openen","Onjuist wachtwoord.","Het blijft 30 dagen geldig op dit apparaat.","Deze browser kan de presentatie niet openen in een privévenster. Gebruik een normaal venster."],"cs":["Důvěrná prezentace","Heslo","Otevřít","Nesprávné heslo.","Na tomto zařízení zůstane platné 30 dní.","Tento prohlížeč nemůže otevřít prezentaci v anonymním okně. Použijte běžné okno."],"pl":["Prezentacja poufna","Hasło","Otwórz","Nieprawidłowe hasło.","Na tym urządzeniu pozostaje ważne przez 30 dni.","Ta przeglądarka nie może otworzyć prezentacji w oknie prywatnym. Użyj zwykłego okna."],"hr":["Povjerljiva prezentacija","Lozinka","Otvori","Netočna lozinka.","Na ovom uređaju vrijedi 30 dana.","Ovaj preglednik ne može otvoriti prezentaciju u privatnom prozoru. Koristite običan prozor."],"sl":["Zaupna predstavitev","Geslo","Odpri","Napačno geslo.","Na tej napravi ostane veljavno 30 dni.","Ta brskalnik ne more odpreti predstavitve v zasebnem oknu. Uporabite običajno okno."]};
+  const m = location.pathname.match(/index-([a-z]{2})\.html$/) || location.search.match(/^\?([a-z]{2})/) || location.hash.match(/^#(?:relatore-)?([a-z]{2})$/);
+  const nav = (navigator.language || '').slice(0, 2);
+  const lingua = m && TESTI[m[1]] ? m[1] : location.pathname.match(/\/(index\.html)?$/) && TESTI[nav] ? nav : 'it';
+  const T = TESTI[lingua];
+  document.documentElement.lang = lingua;
+  ['t0', 't1', 't2', null, 't4'].forEach((id, i) => { if (id) document.getElementById(id).textContent = T[i]; });
+  const errore = document.getElementById('errore');
+  if (!('serviceWorker' in navigator) || !window.indexedDB || !crypto.subtle) { errore.textContent = T[5]; return; }
+  let reg;
+  try { reg = await navigator.serviceWorker.register('/wacebo-company-profile/sw.js'); } catch (e) { errore.textContent = T[5]; return; }
+  async function entra() {
+    await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller) await new Promise((ok) => { navigator.serviceWorker.addEventListener('controllerchange', ok, { once: true }); setTimeout(ok, 3000); });
+    (navigator.serviceWorker.controller || reg.active).postMessage('chiave');
+    sessionStorage.setItem('deck-ricarica', '1');
+    location.reload();
+  }
+  async function prova(k) {
+    try { await chiaveDecifra(k, await (await fetch('/wacebo-company-profile/x/verifica.bin')).arrayBuffer()); return true; } catch (e) { return false; }
+  }
+  // chiave già salvata (ricarica forzata, primo caricamento dopo la password): si rientra una volta sola
+  const salvata = await chiaveLeggi().catch(() => null);
+  if (salvata && await prova(salvata) && !sessionStorage.getItem('deck-ricarica')) return entra();
+  sessionStorage.removeItem('deck-ricarica');
+  if (salvata) await chiaveScrivi(null);
+  document.getElementById('modulo').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const b = document.getElementById('t2'); b.disabled = true; errore.textContent = '';
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(document.getElementById('pw').value), 'PBKDF2', false, ['deriveKey']);
+    const sale = Uint8Array.from(atob(CHIAVE.sale), (c) => c.charCodeAt(0));
+    const k = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: sale, iterations: CHIAVE.iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+    if (!await prova(k)) { errore.textContent = T[3]; b.disabled = false; return; }
+    await chiaveScrivi(k);
+    entra();
+  });
+})();
+</script>
+</body>
+</html>
